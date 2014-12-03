@@ -4,8 +4,8 @@
 "use strict";
 
 
-var width = 100;
-var height = 100;
+var width = 60;
+var height = 60;
 var size = 5;
 
 var grid = [],
