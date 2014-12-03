@@ -1,6 +1,5 @@
 /* jshint node:false, browser:true, undef:true */
 /* global jQuery, io, PIXI, Point, console, Shape  */
-
 // 5x5 grid
 var width = 40;
 var height = 40;
@@ -18,7 +17,7 @@ var borderPoint = {
 	isWall: true
 };
 
-var maxSpeed = 10;
+var maxSpeed = 8;
 
 var log = console.log;
 //log = function () {};
@@ -34,13 +33,13 @@ function Square(x, y) {
 	this.acceleration = new Point(0, 0);
 
 	var shape = new Shape.Rectangle(this.bigPos, size);
-	shape.fillColor = 'black';
+	shape.fillColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
 	shape.strokeColor = 'red';
 
 	var debug = new Shape.Rectangle(this.bigPos, size);
 	debug.fillColor = 'blue';
 	debug.strokeColor = 'red';
-	debug.opacity = 0.5;
+	debug.opacity = 0;
 
 
 	this.screenElement = shape;
