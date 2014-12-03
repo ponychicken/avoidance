@@ -1,9 +1,9 @@
-/* jshint node: false, browser: true, undef: true */
+/* jshint node:false, browser:true, undef:true */
 /* global jQuery, io, PIXI, Point, console, Shape  */
 
 // 5x5 grid
-var width = 200;
-var height = 200;
+var width = 50;
+var height = 50;
 var size = 15;
 
 var grid = [];
@@ -54,6 +54,9 @@ for (var i = 0; i < width; i++) {
 	for (var j = 0; j < height; j++) {
 		var index = j * width + i;
 
+		var shape = new Shape.Rectangle(new Point(j, i), size);
+		shape.fillColor = 'white';
+		shape.strokeColor = 'grey';
 
 
 		// Wrap
@@ -62,7 +65,7 @@ for (var i = 0; i < width; i++) {
 			y: j
 		};
 
-		if (Math.random() < 0.05) {
+		if (Math.random() < 0.01) {
 			grid[index].square = new Square(i, j);
 		}
 
@@ -73,9 +76,7 @@ for (var i = 0; i < width; i++) {
 function getGridSection(x, y) {
 	// There an invisible border two squares wide/high
 	if (x < 0 || x >= width || y < 0 || y >= height) {
-		return {
-			occupied: true
-		};
+		return borderPoint;
 	} else {
 		var index = y * width + x;
 		var ret = grid[index];
@@ -102,7 +103,7 @@ function getForceOfSurrounding(x, y) {
 
 
 			// Add to force if occupied:
-			if (grid.square) {
+			if (grid.square || grid.isWall) {
 				var point = new Point(i, j);
 				var vectorFromCenter = centerPoint - point;
 				count++;
@@ -120,7 +121,6 @@ function step() {
 }
 
 function moveSquare(oldLoc, i) {
-
 	if (oldLoc.square) {
 		var x = oldLoc.x;
 		var y = oldLoc.y;
@@ -128,7 +128,7 @@ function moveSquare(oldLoc, i) {
 		var force = getForceOfSurrounding(x, y);
 
 		// Slow down
-		square.velocity = square.velocity * 0.8;
+		square.velocity = square.velocity * 0.95;
 		square.acceleration = force;
 
 		// Add new acceleration
@@ -151,7 +151,6 @@ function moveSquare(oldLoc, i) {
 			updateGridElement(oldLoc);
 		}
 	}
-
 }
 
 
@@ -161,15 +160,15 @@ function getAffectedGridElement(x, y, f) {
 	var dest = p + f;
 	dest = dest.round();
 
-	var square = getGridSection(dest.x, dest.y);
-	if (square.isWall || square.occupied) {
+	var gridElement = getGridSection(dest.x, dest.y);
+	if (gridElement.isWall || gridElement.square) {
 		// Try to half the force
 		f = f / 2;
 		dest = p + f;
 		dest = dest.round();
-		square = getGridSection(dest.x, dest.y);
+		gridElement = getGridSection(dest.x, dest.y);
 	}
-	return square;
+	return gridElement;
 }
 
 function updateGridElement(gridElement) {
