@@ -195,7 +195,7 @@ function mouseMove(e) {
 
 function setupPixi() {
 	// Setup Pixi
-	stage = new PIXI.Stage(0xFFFFFF, false);
+	stage = new PIXI.Stage(0x000, false);
 	//stage.interactive = true;
 
 	renderer = PIXI.autoDetectRenderer(width * size, height * size);
@@ -250,9 +250,9 @@ function draw() {
 
 function createActor(point, fill, line) {
 	var graphics = new PIXI.Graphics();
-	graphics.beginFill(fill || Math.random() * 16777215, 1);
-	graphics.lineStyle(2, line || 0x0000FF, 1);
-	graphics.drawRect(0, 0, size, size);
+	graphics.beginFill(fill || 0xFFFFFF || Math.random() * 16777215, 1);
+	//graphics.lineStyle(0, line || 0x0000FF, 1);
+	graphics.drawRect(0, 0, 2, 2);
 
 	var actor = new PIXI.Sprite(graphics.generateTexture());
 	actor.interactive = true;
