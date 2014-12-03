@@ -3,10 +3,11 @@
 
 "use strict";
 
-
-var width = 60;
-var height = 60;
 var size = 5;
+
+var width = Math.floor(window.innerWidth / size);
+var height = Math.floor(window.innerHeight / size);
+
 
 var grid = [],
 	squares = [];
@@ -26,7 +27,7 @@ var borderPoint = {
 var maxSpeed = 5;
 
 var log = console.log.bind(console);
-//log = function () {};
+    log = function () {};
 
 var centerPoint = new Vector(width * size / 2, height * size / 2);
 
@@ -102,15 +103,9 @@ function getForceOfSurrounding(x, y) {
 	return force.divide(Math.pow(count, 1 / 2.4));
 }
 
-
-function moveSquare(square) {
-	var oldLoc = grid[square.curGrid];
-	var x = oldLoc.x;
-	var y = oldLoc.y;
-	var force = getForceOfSurrounding(x, y);
-
+function applyForceToSquare(square, force) {
 	// Slow down
-	square.velocity = square.velocity.multiply(0.7);
+	square.velocity = square.velocity.multiply(0.3);
 
 	// Add new acceleration
 	square.velocity = square.velocity.add(force);
@@ -129,21 +124,36 @@ function moveSquare(square) {
 
 	// Internal floating location
 	square.pos = square.pos.add(square.velocity);
+}
 
-	var newLoc = getAffectedGridElement(x, y, square.velocity);
+function applyMove(oldLoc, newLoc, square) {
+	newLoc.square = oldLoc.square;
+	oldLoc.square = false;
+	square.curGrid = newLoc.index;
+
+	updateGridElement(newLoc);
+	updateGridElement(oldLoc);
+}
+
+function moveSquare(square) {
+	let oldLoc = grid[square.curGrid];
+	let x = oldLoc.x;
+	let y = oldLoc.y;
+	let force = getForceOfSurrounding(x, y);
+
+	if (!force.x && !force.y) return;
+
+	applyForceToSquare(square, force);
+
+
+	let newLoc = getAffectedGridElement(x, y, square.velocity);
 
 
 	if (!newLoc.square && !newLoc.isWall) {
-		newLoc.square = oldLoc.square;
-		log(new Vector(newLoc.x - oldLoc.x, newLoc.y - oldLoc.y));
-		oldLoc.square = false;
-		square.curGrid = grid.indexOf(newLoc);
-
-		updateGridElement(newLoc);
-		updateGridElement(oldLoc);
+		applyMove(oldLoc, newLoc, square);
 	}
-
 }
+
 
 
 
@@ -203,7 +213,7 @@ function setupPixi() {
 		for (let j = 0; j < height; j++) {
 			let index = j * width + i;
 			var point = new Vector(i * size, j * size);
-			var shape = createActor(point, 0xffffff, 0xcccccc);
+			//var shape = createActor(point, 0xffffff, 0xcccccc);
 		}
 	}
 
@@ -213,10 +223,11 @@ function setupPixi() {
 			let index = j * width + i;
 			grid[index] = {
 				x: i,
-				y: j
+				y: j,
+				index: index
 			};
 
-			if (Math.random() < 0.02) {
+			if (Math.random() < 0.064) {
 				grid[index].square = new Square(i, j);
 				grid[index].square.curGrid = index;
 			}
