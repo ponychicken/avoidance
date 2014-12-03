@@ -2,8 +2,8 @@
 /* global jQuery, io, PIXI, Point, console, Shape  */
 
 // 5x5 grid
-var width = 50;
-var height = 50;
+var width = 40;
+var height = 40;
 var size = 15;
 
 var grid = [];
@@ -15,17 +15,16 @@ var steeringForce = 0.1;
 
 
 var borderPoint = {
-	occupied: true,
 	isWall: true
 };
 
 var maxSpeed = 10;
 
 var log = console.log;
-log = function () {};
+//log = function () {};
 
 var centerPoint = new Point(width * size / 2, height * size / 2);
-log(centerPoint);
+
 
 
 function Square(x, y) {
@@ -45,21 +44,25 @@ function Square(x, y) {
 
 
 	this.screenElement = shape;
-	this.debugElement = shape;
+	this.debugElement = debug;
 }
-
 
 // First we fill the grid
 for (var i = 0; i < width; i++) {
 	for (var j = 0; j < height; j++) {
 		var index = j * width + i;
-
-		var shape = new Shape.Rectangle(new Point(j, i), size);
+		var point = new Point(i * size, j * size);
+		var shape = new Shape.Rectangle(point, size);
+		//var shape = new Shape.Rectangle(new Point(j, i), size);
 		shape.fillColor = 'white';
 		shape.strokeColor = 'grey';
+	}
+}
 
-
-		// Wrap
+// First we fill the grid
+for (var i = 0; i < width; i++) {
+	for (var j = 0; j < height; j++) {
+		var index = j * width + i;
 		grid[index] = {
 			x: i,
 			y: j
@@ -82,7 +85,7 @@ function getGridSection(x, y) {
 		var ret = grid[index];
 
 		if (!ret) {
-			console.log(ret, index, x, y, grid.length);
+			//console.log(ret, index, x, y, grid.length);
 		}
 		return grid[index];
 	}
