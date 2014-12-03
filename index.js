@@ -5,7 +5,8 @@ var width = 40;
 var height = 40;
 var size = 15;
 
-var grid = [], squares = [];
+var grid = [],
+	squares = [];
 
 
 var vectors = [];
@@ -18,7 +19,7 @@ var borderPoint = {
 	isWall: true
 };
 
-var maxSpeed = 8;
+var maxSpeed = 5;
 
 var log = console.log;
 //log = function () {};
@@ -70,7 +71,7 @@ for (var i = 0; i < width; i++) {
 			y: j
 		};
 
-		if (Math.random() < 0.01) {
+		if (Math.random() < 0.02) {
 			grid[index].square = new Square(i, j);
 			grid[index].square.curGrid = index;
 		}
@@ -80,18 +81,24 @@ for (var i = 0; i < width; i++) {
 }
 
 function getGridSection(x, y) {
-	// There an invisible border two squares wide/high
+	//
+	if (x > (centerPoint.x - 2) && x < (centerPoint.x + 2) && y > (centerPoint.y - 2) && y < (centerPoint.y + 2)) {
+		return borderPoint;
+
+	}
+
+	// There an invisible border around the canvas
 	if (x < 0 || x >= width || y < 0 || y >= height) {
 		return borderPoint;
-	} else {
-		var index = y * width + x;
-		var ret = grid[index];
-
-		if (!ret) {
-			//console.log(ret, index, x, y, grid.length);
-		}
-		return grid[index];
 	}
+	var index = y * width + x;
+	var ret = grid[index];
+
+	if (!ret) {
+		//console.log(ret, index, x, y, grid.length);
+	}
+	return grid[index];
+
 }
 
 
@@ -122,9 +129,9 @@ function getForceOfSurrounding(x, y) {
 }
 
 
-function step() {
-	console.clear();
+function onFrame() {
 	squares.forEach(moveSquare);
+	//window.requestAnimationFrame(step);
 }
 
 function moveSquare(square) {
@@ -134,7 +141,7 @@ function moveSquare(square) {
 	var force = getForceOfSurrounding(x, y);
 
 	// Slow down
-	square.velocity = square.velocity * 0.85;
+	square.velocity = square.velocity * 0.7;
 	square.acceleration = force;
 
 	// Add new acceleration
@@ -194,6 +201,7 @@ function updateGridElement(gridElement) {
 }
 
 
-function onMouseDown(e) {
-	step();
+function onMouseMove(e) {
+	centerPoint = (e.point / size).round();
+	log(centerPoint);
 }
