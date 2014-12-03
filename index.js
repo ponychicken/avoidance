@@ -5,7 +5,8 @@ var width = 40;
 var height = 40;
 var size = 15;
 
-var grid = [];
+var grid = [], squares = [];
+
 
 var vectors = [];
 var addedVec = new Point(0, 0);
@@ -44,6 +45,8 @@ function Square(x, y) {
 
 	this.screenElement = shape;
 	this.debugElement = debug;
+
+	squares.push(this);
 }
 
 // First we fill the grid
@@ -69,6 +72,7 @@ for (var i = 0; i < width; i++) {
 
 		if (Math.random() < 0.01) {
 			grid[index].square = new Square(i, j);
+			grid[index].square.curGrid = index;
 		}
 
 		updateGridElement(grid[index]);
@@ -119,42 +123,43 @@ function getForceOfSurrounding(x, y) {
 
 
 function step() {
-	grid.forEach(moveSquare);
+	console.clear();
+	squares.forEach(moveSquare);
 }
 
-function moveSquare(oldLoc, i) {
-	if (oldLoc.square) {
-		var x = oldLoc.x;
-		var y = oldLoc.y;
-		var square = oldLoc.square;
-		var force = getForceOfSurrounding(x, y);
+function moveSquare(square) {
+	var oldLoc = grid[square.curGrid];
+	var x = oldLoc.x;
+	var y = oldLoc.y;
+	var force = getForceOfSurrounding(x, y);
 
-		// Slow down
-		square.velocity = square.velocity * 0.85;
-		square.acceleration = force;
+	// Slow down
+	square.velocity = square.velocity * 0.85;
+	square.acceleration = force;
 
-		// Add new acceleration
-		square.velocity += square.acceleration;
+	// Add new acceleration
+	square.velocity += square.acceleration;
 
-		if (square.velocity.length > 5) {
-			log(square.velocity, square.velocity.length);
-		}
-		// Max speed
-		if (square.velocity.length > maxSpeed) square.velocity.length = maxSpeed;
-		if (square.velocity.length < 0.1) square.velocity.length = 0;
-		// Internal floating location
-		square.pos += square.velocity;
+	if (square.velocity.length > 5) {
+		log(square.velocity, square.velocity.length);
+	}
+	// Max speed
+	if (square.velocity.length > maxSpeed) square.velocity.length = maxSpeed;
+	if (square.velocity.length < 0.1) square.velocity.length = 0;
+	// Internal floating location
+	square.pos += square.velocity;
 
-		var newLoc = getAffectedGridElement(x, y, square.velocity);
+	var newLoc = getAffectedGridElement(x, y, square.velocity);
 
 
-		if (!newLoc.square && !newLoc.isWall) {
-			newLoc.square = oldLoc.square;
-			oldLoc.square = false;
+	if (!newLoc.square && !newLoc.isWall) {
+		newLoc.square = oldLoc.square;
+		log(new Point(newLoc.x - oldLoc.x, newLoc.y - oldLoc.y));
+		oldLoc.square = false;
+		square.curGrid = grid.indexOf(newLoc);
 
-			updateGridElement(newLoc);
-			updateGridElement(oldLoc);
-		}
+		updateGridElement(newLoc);
+		updateGridElement(oldLoc);
 	}
 
 }
