@@ -130,15 +130,18 @@ function moveSquare(oldLoc, i) {
 		var force = getForceOfSurrounding(x, y);
 
 		// Slow down
-		square.velocity = square.velocity * 0.95;
+		square.velocity = square.velocity * 0.85;
 		square.acceleration = force;
 
 		// Add new acceleration
 		square.velocity += square.acceleration;
 
+		if (square.velocity.length > 5) {
+			log(square.velocity, square.velocity.length);
+		}
 		// Max speed
 		if (square.velocity.length > maxSpeed) square.velocity.length = maxSpeed;
-
+		if (square.velocity.length < 0.1) square.velocity.length = 0;
 		// Internal floating location
 		square.pos += square.velocity;
 
