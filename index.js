@@ -156,7 +156,9 @@ function moveSquare(oldLoc, i) {
 			updateGridElement(oldLoc);
 		}
 	}
+
 }
+
 
 
 function getAffectedGridElement(x, y, f) {
@@ -179,13 +181,11 @@ function getAffectedGridElement(x, y, f) {
 function updateGridElement(gridElement) {
 	var square = gridElement.square;
 	if (square) {
-		console.log(square, gridElement);
-		square.screenElement.position.x = gridElement.x;
-		square.screenElement.position.y = gridElement.y;
+		square.screenElement.position.x = gridElement.x * size;
+		square.screenElement.position.y = gridElement.y * size;
 		square.debugElement.position.x = square.pos.x * size;
 		square.debugElement.position.y = square.pos.y * size;
 	}
-
 }
 
 
