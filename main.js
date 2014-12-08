@@ -8,6 +8,7 @@ var size = 5;
 var width = Math.floor(window.innerWidth / size);
 var height = Math.floor(window.innerHeight / size);
 
+var mousePointer = {};
 
 var grid = [],
 	squares = [];
@@ -21,8 +22,15 @@ var steeringForce = 0.1;
 
 
 var borderPoint = {
-	isWall: true
+	isWall: true,
+	outside: true
 };
+
+var outsidePoint = {
+	outside: true
+};
+
+var amountOfSquares = 0;
 
 var maxSpeed = 5;
 
@@ -59,21 +67,18 @@ function getGridSection(x, y) {
 	//
 	if (x > (centerPoint.x - 2) && x < (centerPoint.x + 2) && y > (centerPoint.y - 2) && y < (centerPoint.y + 2)) {
 		return borderPoint;
-
 	}
 
 	// There an invisible border around the canvas
-	if (x < 0 || x >= width || y < 0 || y >= height) {
+	if (x < -1 || x > width + 1 || y < -1 || y > height + 1) {
 		return borderPoint;
 	}
-	var index = y * width + x;
-	var ret = grid[index];
-
-	if (!ret) {
-		//console.log(ret, index, x, y, grid.length);
+	// There an invisible border around the canvas
+	if (x < 0 || x >= width || y < 0 || y >= height) {
+		return outsidePoint;
 	}
-	return grid[index];
-
+	var index = y * width + x;
+	return grid[index] || {};
 }
 
 
@@ -103,7 +108,7 @@ function getForceOfSurrounding(x, y) {
 	return force.divide(Math.pow(count, 1 / 2.4));
 }
 
-function applyForceToSquare(square, force) {
+function calculateVelocity(square, force) {
 	// Slow down
 	square.velocity = square.velocity.multiply(0.3);
 
@@ -116,38 +121,36 @@ function applyForceToSquare(square, force) {
 		return square.velocity.multiply(0);
 	}
 
-	if (length > 5) {
-		log(square.velocity, square.velocity.length);
-	}
 	// Max speed
 	if (length > maxSpeed) square.velocity.multiply(maxSpeed / length);
 
-	// Internal floating location
-	square.pos = square.pos.add(square.velocity);
 }
 
 function applyMove(oldLoc, newLoc, square) {
 	newLoc.square = oldLoc.square;
 	oldLoc.square = false;
-	square.curGrid = newLoc.index;
+	square.curIndex = newLoc.index;
+	square.curGrid = newLoc;
 
 	updateGridElement(newLoc);
 	updateGridElement(oldLoc);
 }
 
+var test_x, test_y, oldLoc;
+
 function moveSquare(square) {
-	let oldLoc = grid[square.curGrid];
-	let x = oldLoc.x;
-	let y = oldLoc.y;
-	let force = getForceOfSurrounding(x, y);
+	var oldLoc = square.curGrid;
+	var x = oldLoc.x;
+	var y = oldLoc.y;
+	var force = getForceOfSurrounding(x, y);
 
 	if (!force.x && !force.y) return;
 
-	applyForceToSquare(square, force);
+	calculateVelocity(square, force);
 
-
-	let newLoc = getAffectedGridElement(x, y, square.velocity);
-
+	// Internal floating location
+	var newLoc = getAffectedGridElement(square.pos, square.velocity);
+	square.pos = square.pos.add(square.velocity);
 
 	if (!newLoc.square && !newLoc.isWall) {
 		applyMove(oldLoc, newLoc, square);
@@ -156,10 +159,7 @@ function moveSquare(square) {
 
 
 
-
-function getAffectedGridElement(x, y, f) {
-	var p = new Vector(x, y);
-
+function getAffectedGridElement(p, f) {
 	var dest = p.add(f);
 	dest = dest.round();
 
@@ -186,9 +186,9 @@ function updateGridElement(gridElement) {
 
 
 function mouseMove(e) {
-
 	centerPoint = new Vector(e.global.x / size, e.global.y / size).round();
-	//log(centerPoint);
+	mousePointer.x = e.global.x - 5;
+	mousePointer.y = e.global.y - 5;
 }
 
 
@@ -209,18 +209,9 @@ function setupPixi() {
 
 
 	// First we fill the grid
-	for (let i = 0; i < width; i++) {
-		for (let j = 0; j < height; j++) {
-			let index = j * width + i;
-			var point = new Vector(i * size, j * size);
-			//var shape = createActor(point, 0xffffff, 0xcccccc);
-		}
-	}
-
-	// First we fill the grid
-	for (let i = 0; i < width; i++) {
-		for (let j = 0; j < height; j++) {
-			let index = j * width + i;
+	for (var i = 0; i < width; i++) {
+		for (var j = 0; j < height; j++) {
+			var index = j * width + i;
 			grid[index] = {
 				x: i,
 				y: j,
@@ -229,23 +220,40 @@ function setupPixi() {
 
 			if (Math.random() < 0.064) {
 				grid[index].square = new Square(i, j);
-				grid[index].square.curGrid = index;
+				grid[index].square.curIndex = index;
+				grid[index].square.curGrid = grid[index];
 			}
 
 			updateGridElement(grid[index]);
 		}
 	}
 
+	amountOfSquares = squares.length;
+	var text = new PIXI.Text('the thing – it’s name', {
+		font:"50px Georgia",
+		fill: 'white',
+		align: 'center',
+		stroke: 'red',
+		strokeThickness: 2
+	});
+	// text.position.x = width;
+	// text.position.y = height*2;
+	// stage.addChild(text);
+	//mouse();
+
 }
+
 
 // Standard draw loop
 function draw() {
 	requestAnimationFrame(draw);
-	squares.forEach(moveSquare);
+
+	var l = amountOfSquares;
+	while(l--) {
+		moveSquare(squares[l]);
+	}
 	renderer.render(stage);
 }
-
-
 
 
 function createActor(point, fill, line) {
@@ -261,5 +269,20 @@ function createActor(point, fill, line) {
 	return stage.addChild(actor);
 }
 
+var texture;
 
+function generateTexture() {
+	var graphics = new PIXI.Graphics();
+	//graphics.beginFill(0xFF0000 || Math.random() * 16777215, 1);
+	graphics.lineStyle(2, 0xFF0000, 2);
+	graphics.drawCircle(0, 0, 10);
+	texture = graphics.generateTexture();
+}
+
+function mouse() {
+	mousePointer = new PIXI.Sprite(texture);
+	return stage.addChild(mousePointer);
+}
+
+generateTexture();
 setupPixi();
