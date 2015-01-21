@@ -4,7 +4,7 @@
 var width = 40;
 var height = 40;
 var size = 15;
-
+ 
 var grid = [],
 	squares = [];
 
@@ -21,7 +21,6 @@ var borderPoint = {
 
 var maxSpeed = 5;
 
-var log = console.log;
 //log = function () {};
 
 var centerPoint = new Point(width * size / 2, height * size / 2);
@@ -148,7 +147,7 @@ function moveSquare(square) {
 	square.velocity += square.acceleration;
 
 	if (square.velocity.length > 5) {
-		log(square.velocity, square.velocity.length);
+		console.log(square.velocity, square.velocity.length);
 	}
 	// Max speed
 	if (square.velocity.length > maxSpeed) square.velocity.length = maxSpeed;
@@ -161,7 +160,7 @@ function moveSquare(square) {
 
 	if (!newLoc.square && !newLoc.isWall) {
 		newLoc.square = oldLoc.square;
-		log(new Point(newLoc.x - oldLoc.x, newLoc.y - oldLoc.y));
+		console.log(new Point(newLoc.x - oldLoc.x, newLoc.y - oldLoc.y));
 		oldLoc.square = false;
 		square.curGrid = grid.indexOf(newLoc);
 
@@ -203,5 +202,5 @@ function updateGridElement(gridElement) {
 
 function onMouseMove(e) {
 	centerPoint = (e.point / size).round();
-	log(centerPoint);
+	console.log(centerPoint);
 }
